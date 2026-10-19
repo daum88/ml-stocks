@@ -27,15 +27,16 @@ def prereg_delay0(prereg):
     return cfg
 
 
-def mk_bars(open_times_ms, close, interval_ms, high=None, low=None, volume=None):
+def mk_bars(open_times_ms, close, interval_ms, high=None, low=None, volume=None, open_=None):
     """Build a BarSeries from open times and closes (O/H/L/C defaults to close)."""
     close = np.asarray(close, dtype=np.float64)
-    high = np.asarray(high, dtype=np.float64) if high is not None else close.copy()
-    low = np.asarray(low, dtype=np.float64) if low is not None else close.copy()
+    open_ = np.asarray(open_, dtype=np.float64) if open_ is not None else close.copy()
+    high = np.asarray(high, dtype=np.float64) if high is not None else np.maximum(open_, close)
+    low = np.asarray(low, dtype=np.float64) if low is not None else np.minimum(open_, close)
     vol = np.asarray(volume, dtype=np.float64) if volume is not None else np.ones(close.shape)
     return BarSeries(
         open_time=np.asarray(open_times_ms, dtype=np.int64),
-        open=close.copy(),
+        open=open_,
         high=high,
         low=low,
         close=close,
