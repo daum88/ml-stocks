@@ -1,0 +1,22 @@
+# fees.yaml — exchange fees and order constraints (filled by the HUMAN after Phase 0)
+# Verified 2026-10-19 against Bitvavo public API; exact tier % still needs the account holder.
+
+exchange:
+  name: "bitvavo"                # TODO: confirm final choice (bitvavo | kraken)
+  market: "BTC-EUR"
+  # Bitvavo base tier per plan v3.3. CONFIRM YOUR OWN ACCOUNT TIER before the lock.
+  maker_fee_pct: 0.15            # TODO: confirm (account-tier dependent)
+  taker_fee_pct: 0.25            # TODO: confirm (account-tier dependent)
+
+order_constraints:
+  # Verified from Bitvavo public /markets for BTC-EUR (2026-10-19)
+  min_order_quote_eur: 5.00
+  min_order_base_btc: 0.00006942
+  quantity_step_btc: 0.00000001  # quantityDecimals: 8
+  price_tick_eur: 1.00           # tickSize: 1.00
+  max_open_orders: 400
+
+post_only:
+  # D8 requires post-only maker entries. Bitvavo orderTypes has NO post-only entry;
+  # Kraken documents Post-Only time-in-force. MUST be verified before going live.
+  supported: "UNVERIFIED"        # TODO: verify (bitvavo request-side postOnly flag / kraken tif)

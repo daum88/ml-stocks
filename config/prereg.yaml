@@ -1,0 +1,88 @@
+# prereg.yaml — PRE-REGISTRATION PARAMETERS (frozen at the M7 lock)
+#
+# WARNING: This is a TEMPLATE. Every "TODO: APPROVAL" value is an OPEN HUMAN DECISION
+# (see DECISIONS.md §4). Nothing in this file is frozen until PREREG.lock is produced.
+# Once locked, this file must NOT be edited (the backtest runner enforces this).
+
+strategy:
+  variants:
+    V1:
+      timeframe: "1d"
+      entry: "close > SMA(200)"                 # state-based
+      exit: "close < SMA(200)"
+      sma_entry_period: 200
+      trailing_stop_atr_mult: null             # V1 has no trailing stop
+    V2:
+      timeframe: "4h"
+      entry: "cross-up EMA(50) over EMA(100) AND daily gate on"   # event-based
+      exit: "EMA(50) < EMA(100)"
+      ema_fast: 50
+      ema_slow: 100
+      trailing_stop_atr_mult: 3.0
+    V3:
+      timeframe: "1h"
+      entry: "cross-up EMA(20) over EMA(50) AND daily gate on"    # event-based
+      exit: "EMA(20) < EMA(50)"
+      ema_fast: 20
+      ema_slow: 50
+      trailing_stop_atr_mult: 3.0
+  daily_gate: "daily close > SMA(200)"         # applies to V2/V3 entries only
+  atr_period: 14
+  disaster_stop_pct: 25.0                      # 0.75 * entry fill price
+
+indicators:
+  ema_seed: "SMA of first n closes"            # do NOT change (spec §5)
+  ema_warmup_bars: "3 * n"
+  atr_warmup_bars: 100
+
+sizing:
+  V1: "100% of available cash"
+  V2V3_risk_pct: 1.0                           # TODO: APPROVAL (plan default 1%)
+  cap_pct_of_equity: 100.0
+
+costs:
+  half_spread_pct: 0.01                        # TODO: APPROVAL
+  through_haircut_pct: 0.05                    # TODO: APPROVAL
+  entry_slip_pct: { V1: 0.10, V2: 0.15, V3: 0.15 }   # TODO: APPROVAL
+  exit_slip_pct: { V1: 0.10, V2: 0.15, V3: 0.15 }    # TODO: APPROVAL
+  maker_fee_pct: "from fees.yaml"
+  taker_fee_pct: "from fees.yaml"
+
+execution:
+  # TODO: APPROVAL — D8 re-pricing cadence. Plan v3.3: "re-priced every bar".
+  # Spec v1.1: "re-price once at next signal close". MUST RESOLVE before lock.
+  repricing_rule: "UNRESOLVED"                 # 'every_bar' | 'once_at_next_close'
+  entry_attempts: 2                            # up to 2 signal candles
+  action_delay_minutes: 0                      # sensitivity: 360 (Branch A). TODO: APPROVAL
+  V1_execution_time_utc: "06:00"               # plan v3.3 D8. TODO: reconcile with spec §7.4
+
+evaluation:
+  # Single global start = earliest bar where ALL indicators of ALL variants (+sensitivities)
+  # are valid. End = last complete bar of the dataset. TODO: depends on data source (§2).
+  initial_cash_eur: 400
+
+criteria:
+  C1_return_floor_pct_of_bh: 70.0
+  C2_exposure_match_penalty_pp: 2.0
+  C3_calmar_mult_of_bh: 1.25
+  C4_baseline_percentile: 95.0
+  C5_sanity_floor_trips: { V1: 8, V2: 24, V3: 60 }   # per 8 years, scaled by window
+  C6_sensitivity_variants:
+    V1: [150, 250]                             # SMA lengths
+    V2: [[30, 60], [70, 140]]                  # EMA fast x slow
+    V3: [[10, 30], [30, 70]]
+  selection:
+    V1_default: true
+    replace_margin_cagr: 1.20                  # 20% relative
+    replace_margin_calmar: 1.20
+    tie_break: "higher_calmar_then_lower_frequency"   # TODO: APPROVAL (§14.7)
+
+baseline:
+  random_shift_draws: 1000
+  random_seed: "from prereg"                   # TODO: APPROVAL (choose fixed seed)
+
+live:                                          # Phase 2 (not used in Phase 1 backtest)
+  telegram_token_env: "TELEGRAM_BOT_TOKEN"
+  heartbeat_time_utc: "09:00"                  # TODO: APPROVAL
+  staleness_mult: 2.0                          # 2x variant interval
+  staleness_atr_mult: 1.0

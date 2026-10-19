@@ -1,0 +1,17 @@
+# Data and results are never committed.
+data/
+results/
+*.parquet
+*.zip
+
+# Secrets — the Telegram token must never touch the repo.
+.env
+*.token
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/

@@ -1,0 +1,29 @@
+# data_sources.yaml — data URLs and verified facts (2026-10-19)
+# NOTE: the PRIMARY candle source in the spec (Kraken OHLCVT archive) could NOT be located.
+# See DECISIONS.md §2 — data-source strategy is BLOCKED pending a human decision.
+
+bitvavo:
+  base_url: "https://api.bitvavo.com/v2"
+  market: "BTC-EUR"
+  candles_path: "/{market}/candles"          # params: interval, limit, start, end
+  time_path: "/time"
+  max_candles_per_call: 1440
+  candle_columns: [open_time_ms, open, high, low, close, volume]  # open-time labeled
+  intervals_verified: [1m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d]
+  history_depth: "recent-only (no deep history)"
+
+kraken:
+  rest_ohlc_url: "https://api.kraken.com/0/public/OHLC"
+  btc_eur_pair: "XXBTZEUR"        # wsname XBT/EUR
+  ohlc_columns: [time_sec, open, high, low, close, vwap, volume, count]
+  ohlc_history_depth: "~720 recent candles only (no deep history via public OHLC)"
+  archive:
+    status: "OHLCVT candle archive NOT FOUND — article now points to trades-only data"
+    trades_url_pattern: "https://assets.kraken.com/marketing/institutions/Kraken_Trades_Full.zip.part{00..13}"
+    trades_columns: [timestamp, price, volume, type, order_type, misc, trade_id]
+    trades_range: "through 2026-09-30"
+
+binance:
+  vision_base: "https://data.binance.vision/data/spot/monthly/klines"
+  btcusdt: "full history available (1d/1h/4h/5m)"     # USD, not EUR
+  btceur: "2025+ only (2017/2019 = 404)"
