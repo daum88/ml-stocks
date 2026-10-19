@@ -190,3 +190,23 @@ Next: extract ETHEUR (part 01), run the ETH/EUR development backtest.
 981 overlapping daily closes (XBTEUR vs BTC-EUR). **Median abs diff 0.021%** (spec limit
 0.15% ✓). Max 1.98%; 30 days > 0.15%, 3 days > 0.5% (flagged — exchange close-timing
 differences/outages, not data corruption). Kraken history accepted as primary.
+
+## 9. DEVELOPMENT RUN + CRITICAL BUG (2026-10-19)
+
+**Dev asset: LTCEUR (LTC/EUR)** — used instead of ETHEUR because part 01 (which holds
+ETH/EUR) was CDN-throttled; LTCEUR (part 02) is a "different asset" and served the same
+purpose. (ETHEUR is still downloading in the background and can be added later.)
+
+The dev run caught a **critical bug**: `fees.yaml` stored maker/taker as `0.15`/`0.25`
+(= 15%/25%) instead of fractions `0.0015`/`0.0025`. Fees were **100× too high**, making all
+strategy variants lose catastrophically. Fixed, and a pydantic validator now rejects any
+fee ≥ 1% (regression test added).
+
+**LTCEUR results after the fix (sanity, not a pre-registered pair):**
+- Buy-and-hold CAGR 19.5%, Calmar 0.21, final €3559.
+- V1: CAGR 13.2%, maxDD 92.5%, 75 trips, win 10.7%, PF 1.08 → Tier C.
+- V2: CAGR 1.1%, maxDD 8.5%, 41 trips, win 39%, PF 1.73, **Calmar rank 100%** → Tier C
+  (fails C1/C3 absolute-return/calmar floors vs B&H, even though it beats every circular shift).
+- V3: CAGR 1.6%, 391 trips → Tier C.
+
+The pipeline is validated end-to-end on real exchange data (12.3 yr window, 1m12s runtime).
