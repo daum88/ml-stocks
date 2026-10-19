@@ -28,7 +28,7 @@ class _Order:
 class BacktestResult:
     variant: str
     fills: list = field(default_factory=list)
-    equity_5m: list = field(default_factory=list)   # [(close_time_ms, equity), ...]
+    equity_5m: list = field(default_factory=list)   # [(close_time_ms, equity, btc_qty, mark_price), ...]
     missed_trades: int = 0
     skipped_min_size: int = 0
     signal_expired: int = 0
@@ -147,7 +147,7 @@ class Backtester:
                             res.skipped_min_size += 1
                             pending = None
             # equity sample at this 5m bar close
-            res.equity_5m.append((o + self.base5m.interval_ms, ledger.equity(bar[3])))
+            res.equity_5m.append((o + self.base5m.interval_ms, ledger.equity(bar[3]), ledger.btc, bar[3]))
 
         # --- main loop over signal bars (decision times) ---
         n_sig = sig_close.shape[0]
