@@ -60,8 +60,11 @@ def _strategy_for(name: str, prereg: PreRegConfig, bars: dict[str, BarSeries],
 
 
 def run_variant(name: str, prereg: PreRegConfig, fees: FeesConfig, bars: dict[str, BarSeries],
-                start_ms: int, end_ms: int, window_days: float, override: dict | None = None):
+                start_ms: int, end_ms: int, window_days: float, override: dict | None = None,
+                delay: int | None = None):
     strat, cfg = _strategy_for(name, prereg, bars, override)
+    if delay is not None:
+        cfg.execution.action_delay_minutes[name] = delay
     base5m = bars["5m_filled"]
     bt = Backtester(strat, base5m, cfg, fees)
     res = bt.run(start_ms, end_ms)
@@ -125,6 +128,11 @@ def evaluate(pair: str, parquet_dir: pathlib.Path, prereg: PreRegConfig, fees: F
         outcomes[name] = vo
         details[name] = {"metrics": m, "backtest": res, "calmar_rank": calmar_rank,
                          "cagr_rank": cagr_rank, "sensitivity_calmars": sens_calmars}
+        # V1: also report the delay=0 result (spec §7.4 / §10.2 — delay>0 governs).
+        if name == "V1":
+            _, _, res0, m0 = run_variant("V1", prereg, fees, bars, start_ms, end_ms,
+                                         window_days, delay=0)
+            details[name]["delay0_metrics"] = m0
         shift_results[name] = {"calmars": calmars.tolist(), "cagrs": cagrs.tolist()}
 
     selection = verdict.select(outcomes, prereg)

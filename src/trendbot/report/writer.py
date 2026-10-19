@@ -67,6 +67,12 @@ def write_report(result: dict, out_dir: pathlib.Path) -> pathlib.Path:
           f"slippage €{m.total_slippage:.2f}")
         a(f"- Calmar rank {det['calmar_rank']*100:.1f}% · CAGR rank {det['cagr_rank']*100:.1f}%")
         a(f"- Sensitivity Calmars: {[f'{x:.2f}' for x in det['sensitivity_calmars']]}")
+        if name == "V1" and "delay0_metrics" in det:
+            m0 = det["delay0_metrics"]
+            cal0 = f"{m0.calmar:.2f}" if m0.calmar is not None else "undef"
+            cal360 = f"{m.calmar:.2f}" if m.calmar is not None else "undef"
+            a(f"- V1 delay=0 (sensitivity): CAGR {_fmt_pct(m0.cagr)} · Calmar {cal0}")
+            a(f"- V1 delay=360 (governs): CAGR {_fmt_pct(m.cagr)} · Calmar {cal360}")
         a("")
 
     # charts

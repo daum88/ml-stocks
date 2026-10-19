@@ -5,8 +5,8 @@
 exchange:
   name: "bitvavo"                # DECIDED (Kraken ~2x cost rejected)
   market: "BTC-EUR"
-  maker_fee_pct: 0.15            # base rate — CONFIRM your own account tier before the lock
-  taker_fee_pct: 0.25            # base rate — CONFIRM your own account tier before the lock
+  maker_fee_pct: 0.0015           # 0.15% (FRACTION) — CONFIRM your own account tier before the lock
+  taker_fee_pct: 0.0025           # 0.25% (FRACTION) — CONFIRM your own account tier before the lock
 
 order_constraints:
   # Verified from Bitvavo public /markets for BTC-EUR (2026-10-19)

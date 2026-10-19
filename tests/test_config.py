@@ -21,7 +21,7 @@ def test_load_prereg_valid():
 def test_load_fees_valid():
     cfg = config.load_fees(ROOT / "config" / "fees.yaml")
     assert cfg.exchange.name == "bitvavo"
-    assert cfg.exchange.maker_fee_pct == 0.15
+    assert cfg.exchange.maker_fee_pct == 0.0015
     assert cfg.order_constraints.price_tick_eur == 1.00
 
 
@@ -42,3 +42,17 @@ def test_missing_key_rejected(tmp_path):
     p.write_text("strategy:\n  variants:\n    V1:\n      timeframe: '1d'\n")
     with pytest.raises(Exception):
         config.load_prereg(p)
+
+
+def test_fee_must_be_fraction(tmp_path):
+    """Regression: fees stored as 0.15 (15%) instead of 0.0015 (0.15%) must be rejected."""
+    p = tmp_path / "bad_fees.yaml"
+    p.write_text(
+        "exchange:\n  name: bitvavo\n  market: BTC-EUR\n"
+        "  maker_fee_pct: 0.15\n  taker_fee_pct: 0.0025\n"
+        "order_constraints:\n  min_order_quote_eur: 5.0\n  min_order_base_btc: 1e-6\n"
+        "  quantity_step_btc: 1e-8\n  price_tick_eur: 1.0\n  max_open_orders: 400\n"
+        "post_only:\n  supported: LIKELY\n  confirm_method: x\n"
+    )
+    with pytest.raises(Exception):
+        config.load_fees(p)

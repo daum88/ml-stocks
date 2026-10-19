@@ -133,6 +133,13 @@ class ExchangeConfig(BaseModel):
     maker_fee_pct: float
     taker_fee_pct: float
 
+    @field_validator("maker_fee_pct", "taker_fee_pct")
+    @classmethod
+    def _fees_are_fractions(cls, v: float) -> float:
+        if not (0 < v < 0.01):
+            raise ValueError(f"fee must be a fraction (e.g. 0.0015 = 0.15%); got {v}")
+        return v
+
 
 class FeesConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")
