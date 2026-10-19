@@ -75,6 +75,13 @@ def write_report(result: dict, out_dir: pathlib.Path) -> pathlib.Path:
             a(f"- V1 delay=360 (governs): CAGR {_fmt_pct(m.cagr)} · Calmar {cal360}")
         a("")
 
+    # trade tables (spec §10.2) — one CSV per variant
+    import pandas as pd
+    for name in ["V1", "V2", "V3"]:
+        fills = result["details"][name]["backtest"].fills
+        if fills:
+            pd.DataFrame(fills).to_csv(out_dir / f"{name}_trades.csv", index=False)
+
     # charts
     try:
         chart_path = _make_charts(result, out_dir)
@@ -82,6 +89,14 @@ def write_report(result: dict, out_dir: pathlib.Path) -> pathlib.Path:
         a("")
     except Exception as e:  # charts are non-essential
         a(f"(chart generation skipped: {e})")
+        a("")
+
+    if result.get("run_metadata"):
+        a("## Run metadata")
+        a("")
+        a("```")
+        a(json.dumps(result["run_metadata"], indent=2))
+        a("```")
         a("")
 
     # raw JSON (lean summary — excludes the full per-bar equity curves)

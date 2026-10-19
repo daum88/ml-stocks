@@ -39,6 +39,24 @@ def main() -> None:
     print(f"Running backtest for {args.pair} ...", flush=True)
     result = runner.evaluate(args.pair, pathlib.Path(args.parquet_dir), prereg, fees)
 
+    # run metadata (spec §2.2): commit, config hashes, manifest hash, library versions
+    import platform
+    import pandas as pd
+    import numpy as np
+    from trendbot.report import lock as lockmod
+    meta = {
+        "git_commit": lockmod.current_commit(ROOT),
+        "prereg_sha256": sha256_of_file(ROOT / "config" / "prereg.yaml"),
+        "fees_sha256": sha256_of_file(ROOT / "config" / "fees.yaml"),
+        "python": platform.python_version(),
+        "pandas": pd.__version__,
+        "numpy": np.__version__,
+    }
+    manifest = ROOT / "data" / "parquet" / f"manifest_{args.pair}.json"
+    if manifest.exists():
+        meta["data_manifest_sha256"] = sha256_of_file(manifest)
+    result["run_metadata"] = meta
+
     out_dir = ROOT / "results" / f"{args.pair}_{result['end_ms']}"
     report_path = writer.write_report(result, out_dir)
 
