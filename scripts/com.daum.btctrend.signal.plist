@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Example launchd job for the live-signal tool (spec §12.7).
+     Schedule shortly after each candle close. V1 = daily 00:00 UTC -> run at 00:02.
+     The tool is idempotent, so a missed run is safe. Copy to
+     ~/Library/LaunchAgents/com.daum.btctrend.signal.plist and:
+       launchctl load ~/Library/LaunchAgents/com.daum.btctrend.signal.plist
+     The TELEGRAM_BOT_TOKEN must be set in the environment (not committed). -->
+<plist version="1.0">
+<dict>
+    <key>Label</key><string>com.daum.btctrend.signal</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/mattiasdaum/btc-eur-trend-bot/.venv/bin/python</string>
+        <string>/Users/mattiasdaum/btc-eur-trend-bot/scripts/run_signal.py</string>
+        <string>--variant</string><string>V1</string>
+        <string>--market</string><string>BTC-EUR</string>
+        <string>--chat-id</string><string>CHAT_ID_HERE</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key><integer>0</integer>
+        <key>Minute</key><integer>2</integer>
+    </dict>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>TELEGRAM_BOT_TOKEN</key><string>TOKEN_HERE</string>
+    </dict>
+    <key>StandardOutPath</key><string>/tmp/btctrend-signal.log</string>
+    <key>StandardErrorPath</key><string>/tmp/btctrend-signal.err</string>
+</dict>
+</plist>

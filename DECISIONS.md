@@ -184,3 +184,9 @@ data, live, truncation/parity, lock, end-to-end synthetic runner).
 M2 validation report generated; M7 dry-run done on synthetic (Tier C on noise, as expected).
 **M8 (BTC/EUR gate run) is BLOCKED until the human locks `prereg.yaml`** (no-peeking rule 5).
 Next: extract ETHEUR (part 01), run the ETH/EUR development backtest.
+
+## 8. Cross-source check (Kraken vs Bitvavo daily closes, 2026-10-19)
+
+981 overlapping daily closes (XBTEUR vs BTC-EUR). **Median abs diff 0.021%** (spec limit
+0.15% ✓). Max 1.98%; 30 days > 0.15%, 3 days > 0.5% (flagged — exchange close-timing
+differences/outages, not data corruption). Kraken history accepted as primary.
