@@ -1,8 +1,8 @@
 # data_sources.yaml — data URLs and verified facts (2026-10-19)
-# NOTE: the PRIMARY candle source in the spec (Kraken OHLCVT archive) could NOT be located.
-# See DECISIONS.md §2 — data-source strategy is BLOCKED pending a human decision.
+# Data source = Kraken OHLCVT archive (primary). Verified live: all URLs below return HTTP 200
+# and the archive contains XBTEUR_5/60/240/1440.csv. See DECISIONS.md §1.2.
 
-bitvavo:
+bitvavo:                          # live-signal + recent cross-check only (no deep history)
   base_url: "https://api.bitvavo.com/v2"
   market: "BTC-EUR"
   candles_path: "/{market}/candles"          # params: interval, limit, start, end
@@ -10,20 +10,35 @@ bitvavo:
   max_candles_per_call: 1440
   candle_columns: [open_time_ms, open, high, low, close, volume]  # open-time labeled
   intervals_verified: [1m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d]
-  history_depth: "recent-only (no deep history)"
+  history_depth: "recent-only (cross-check source, not history source)"
 
 kraken:
   rest_ohlc_url: "https://api.kraken.com/0/public/OHLC"
   btc_eur_pair: "XXBTZEUR"        # wsname XBT/EUR
   ohlc_columns: [time_sec, open, high, low, close, vwap, volume, count]
-  ohlc_history_depth: "~720 recent candles only (no deep history via public OHLC)"
+  ohlc_history_depth: "~720 recent candles only"
   archive:
-    status: "OHLCVT candle archive NOT FOUND — article now points to trades-only data"
-    trades_url_pattern: "https://assets.kraken.com/marketing/institutions/Kraken_Trades_Full.zip.part{00..13}"
-    trades_columns: [timestamp, price, volume, type, order_type, misc, trade_id]
-    trades_range: "through 2026-09-30"
+    article_id: "360047124832"    # 'Downloadable historical OHLCVT data'
+    base_url: "https://assets.kraken.com/marketing/institutions"
+    parts:
+      - "Kraken_OHLCVT_Full.zip.part00"      # 2097152000 B
+      - "Kraken_OHLCVT_Full.zip.part01"      # 2097152000 B
+      - "Kraken_OHLCVT_Full.zip.part02"      # 2097152000 B
+      - "Kraken_OHLCVT_Full.zip.part03"      # 2097152000 B
+      - "Kraken_OHLCVT_Full.zip.part04"      # 1157945626 B
+    quarterly_updates:
+      - "Kraken_OHLCVT_2026Q1.zip"           # 523665624 B
+      - "Kraken_OHLCVT_2026Q2.zip"           # 537866903 B
+      - "Kraken_OHLCVT_2026Q3.zip"           # 576348633 B
+    checksums_url: "OHLCVT_Full_PARTS_SHA256SUMS.txt"
+    reassembled_sha256: "bc273e9027470b07d790a7fa4df9bb43f0dfc527c20c6ecae48402e123e7b1c7"
+    columns: [timestamp, open, high, low, close, volume, trades]   # no header row
+    intervals_available: [1, 5, 15, 60, 240, 720, 1440]            # no 30m
+    btc_eur_files: [XBTEUR_1, XBTEUR_5, XBTEUR_15, XBTEUR_60, XBTEUR_240, XBTEUR_720, XBTEUR_1440]
+    gaps: "not zero-filled"
+    manifest: "MANIFEST.json in each archive"
 
-binance:
+binance:                          # cross-check only
   vision_base: "https://data.binance.vision/data/spot/monthly/klines"
   btcusdt: "full history available (1d/1h/4h/5m)"     # USD, not EUR
   btceur: "2025+ only (2017/2019 = 404)"

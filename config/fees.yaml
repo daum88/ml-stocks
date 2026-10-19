@@ -1,12 +1,12 @@
 # fees.yaml — exchange fees and order constraints (filled by the HUMAN after Phase 0)
-# Verified 2026-10-19 against Bitvavo public API; exact tier % still needs the account holder.
+# Exchange DECIDED: Bitvavo. Verified 2026-10-19 against the public API.
+# TODO before lock: record the ACCOUNT HOLDER'S OWN fee tier (the 0.15/0.25 figures are base).
 
 exchange:
-  name: "bitvavo"                # TODO: confirm final choice (bitvavo | kraken)
+  name: "bitvavo"                # DECIDED (Kraken ~2x cost rejected)
   market: "BTC-EUR"
-  # Bitvavo base tier per plan v3.3. CONFIRM YOUR OWN ACCOUNT TIER before the lock.
-  maker_fee_pct: 0.15            # TODO: confirm (account-tier dependent)
-  taker_fee_pct: 0.25            # TODO: confirm (account-tier dependent)
+  maker_fee_pct: 0.15            # base rate — CONFIRM your own account tier before the lock
+  taker_fee_pct: 0.25            # base rate — CONFIRM your own account tier before the lock
 
 order_constraints:
   # Verified from Bitvavo public /markets for BTC-EUR (2026-10-19)
@@ -17,6 +17,8 @@ order_constraints:
   max_open_orders: 400
 
 post_only:
-  # D8 requires post-only maker entries. Bitvavo orderTypes has NO post-only entry;
-  # Kraken documents Post-Only time-in-force. MUST be verified before going live.
-  supported: "UNVERIFIED"        # TODO: verify (bitvavo request-side postOnly flag / kraken tif)
+  # D8 requires post-only maker entries. NOT in orderTypes (that list is order types, not flags).
+  # Docs show a postOnly BOOLEAN on POST /order ("postOnly": false in cancel-on-disconnect examples;
+  # cancellation reasons cancelPostOnly / cancelPostOnlyOnAuctionMatching).
+  supported: "LIKELY"            # final confirm via live Create Order page or a tiny test order
+  confirm_method: "place postOnly:true limit above the ask -> must be cancelled, not filled"

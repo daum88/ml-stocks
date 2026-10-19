@@ -86,7 +86,7 @@ answered "does volume pay at €400?" with a clear no.
 | D5 | **Cheapest compliant exchange wins.** Verify tier, MiCA status, stop-order support, minimum order, **and post-only support**. Bitvavo base 0.15%/0.25% vs Kraken entry tier 0.40%/0.80% (public schedules; confirm your own tier; Kraken documents Post-Only time-in-force) |
 | D6 | **No VPS, no Docker, no ML** until capital justifies them (§10). Laptop branch uses caffeinate + exchange stops |
 | D7 | **Execution matches frequency:** ≤1 signal/month → manual (Branch A); more → lightweight freqtrade bot on the laptop (Branch B). Branch decided by the Phase 1 winner |
-| D8 | **The execution rule (defined once, simulated in Phase 1, followed live):** entries are **post-only** limit orders at the **best bid**, filled in simulation only when price **trades through the limit by ≥ 0.05%** on 5-minute bars; re-priced every bar for up to **2 signal candles**, then cancelled (missed trade logged). Exits and stops are **taker** (market) — no waiting on limit exits. V1 executes at the **pre-registered time 06:00 UTC** (next day after a daily signal); V2/V3 execute at the next bar open. No other ad-hoc behavior |
+| D8 | **The execution rule (defined once, simulated in Phase 1, followed live):** entries are **post-only** limit orders at the **best bid**, filled in simulation only when price **trades through the limit by ≥ 0.05%** on 5-minute bars; re-priced once at the next signal close for up to **2 signal candles**, then cancelled (missed trade logged). Exits and stops are **taker** (market) — no waiting on limit exits. V1 executes at the **pre-registered time 06:00 UTC** (next day after a daily signal); V2/V3 execute at the next bar open. No other ad-hoc behavior |
 | D9 | **Exchange-hosted disaster stop on every position**, verified before going live |
 | D10 | **Selection rule (pre-registered):** V1 is the default. V2 or V3 replaces it only if it beats V1 on **both** net CAGR and Calmar by ≥ 20% (relative) while passing Tier A itself. If V1 fails Tier A, no variant goes live on the default; V2/V3 would each need Tier A on their own |
 | D11 | **"No edge" is a valid result.** Then hold/DCA or do nothing |
@@ -111,7 +111,7 @@ Common to all variants:
 **Cost and fill model in the test (this is D8 in simulation):**
 - Entry: post-only limit at the best bid at decision time. Fill only if a 5m bar's low
   trades **through** the limit by ≥ 0.05% (low ≤ limit × 0.9995 for buys). Unfilled →
-  re-price at the current best bid each bar, up to 2 signal candles, then cancel
+  re-price once at the next signal close, up to 2 signal candles, then cancel
   (missed trade logged). Fees: maker 0.15% + slippage 0.10% (V1) / 0.15% (V2/V3).
 - Decision times: V1 = 06:00 UTC (pre-registered human execution time; the daily signal
   is evaluated on the candle closed at 00:00 UTC); V2/V3 = next bar open (bot timing).
