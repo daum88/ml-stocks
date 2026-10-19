@@ -140,11 +140,13 @@ def compute_metrics(*, res, initial_cash: float, start_ms: int, end_ms: int,
             # Sharpe / Sortino from daily equity returns
             if deq.size >= 2:
                 rets = np.diff(deq) / deq[:-1]
-                std = rets.std(ddof=1)
-                m.sharpe = float(rets.mean() / std * np.sqrt(365.25)) if std > 0 else 0.0
+                if rets.size >= 2:
+                    std = rets.std(ddof=1)
+                    m.sharpe = float(rets.mean() / std * np.sqrt(365.25)) if std > 0 else 0.0
                 downside = rets[rets < 0]
-                dstd = downside.std(ddof=1)
-                m.sortino = float(rets.mean() / dstd * np.sqrt(365.25)) if downside.size > 1 and dstd > 0 else 0.0
+                if downside.size >= 2:
+                    dstd = downside.std(ddof=1)
+                    m.sortino = float(rets.mean() / dstd * np.sqrt(365.25)) if dstd > 0 else 0.0
 
     # --- round trips ---
     trips = round_trips(fills)
