@@ -210,3 +210,15 @@ fee ≥ 1% (regression test added).
 - V3: CAGR 1.6%, 391 trips → Tier C.
 
 The pipeline is validated end-to-end on real exchange data (12.3 yr window, 1m12s runtime).
+
+## 10. FINAL STATE (autonomous build complete, 2026-10-19)
+
+- **80 tests passing**, including an independent loop-based reference simulator that
+  reproduces the main fill engine exactly (price/time/qty/fees).
+- Exit-reason audit on LTCEUR dev run confirms mechanics: V1 = signal(73)+disaster(2);
+  V2 = trailing(40)+signal(1); V3 = trailing(301)+signal(90).
+- Two bugs found and fixed during development: (1) fees 100× too high (config), (2)
+  `mk_bars` test helper ignored the open array (test-only).
+- **Remaining (requires human):** lock `prereg.yaml` (`scripts/lock.py`), then
+  `scripts/run_backtest.py --pair XBTEUR --gate`. ETHEUR download (optional dev asset)
+  is still running in the background; LTCEUR already served the dev purpose.
