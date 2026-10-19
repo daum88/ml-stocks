@@ -145,3 +145,42 @@ do this; a follow-up for the agent if not.
 | 2026-10-19 | Conservative fill bias = **approved** | human |
 | 2026-10-19 | Data window end = **2026-09-30** (ingest Q1–Q3 quarterly updates) | human |
 | 2026-10-19 | Data source = **Kraken OHLCVT archive** (article 360047124832) — blocker resolved | agent verified, human confirmed |
+
+---
+
+## 7. IMPLEMENTATION STATUS (built autonomously 2026-10-19)
+
+**Modules (all under `src/trendbot/`):** common (timeutil, config/schema), indicators,
+strategy, execution (fill sim), accounting, metrics, baselines, report (verdict, runner,
+writer, lock), live (state, signal, bitvavo, telegram), data (store, kraken, gaps, validate).
+
+**Tests:** 74 passing (indicators, config, strategy, fillsim, metrics, baselines/verdict,
+data, live, truncation/parity, lock, end-to-end synthetic runner).
+
+**Data (Kraken OHLCVT archive, article 360047124832):**
+- Parts 02/03/04 SHA-256 verified against the published per-part checksums.
+- `XBTEUR_*` (BTC/EUR) and `ETHEUR_*` (ETH/EUR — note: Kraken labels ETH/EUR as **ETHEUR**,
+  not XETHZEUR) extracted via ZIP64 central-directory offsets with per-file CRC32 verification.
+- Part 00 (bytes 0–2 GB) is **not needed** (contains other pairs) — skipped. Part 01 holds
+  ETHEUR (dev data). Quarterly `Kraken_OHLCVT_2026Q3.zip` appended → window through 2026-09-30.
+
+**XBTEUR data-quality (allowed pre-lock):**
+- 5m 1,310,154 rows · 1h 113,180 · 4h 28,430 · 1d 4,764; 2013-09-10 → 2026-09-30.
+- Continuity median 0.002–0.005% (clean). Zero-volume bars: 0 (Kraken omits no-trade bars).
+- Gaps: 5m early years high (2013: 70%, 2014: 24%, 2015: 10%, 2016: 3%) — expected early
+  sparsity, mostly before the eval window; post-2017 5m gaps < 1%. A handful of 1h/4h/1d
+  bars missing in 2018/2024/2025 (0.1–0.6%, a few bars/year — exchange outages). All benign.
+
+**Deviations from the spec (recorded, not hidden):**
+1. Parts extracted by ZIP64 offset instead of joining all 5 parts, because part 00/01 contain
+   no needed files and the CDN throttles long downloads. Per-part SHA + per-file CRC32 verified.
+2. `trades` column is parsed but not stored in Parquet (BarSeries has no trades field; the
+   strategy never uses it).
+3. Circular-shift draw Calmars are computed on the reconstructed signal-timeframe equity,
+   annualized with the same window days as the strategy CAGR; the strategy's daily-close Calmar
+   is ranked against them (spec §9.4 / §10.3 C4).
+
+**Status vs milestones:** M0–M7 code+tests done; M1 data done for XBTEUR (ETHEUR pending);
+M2 validation report generated; M7 dry-run done on synthetic (Tier C on noise, as expected).
+**M8 (BTC/EUR gate run) is BLOCKED until the human locks `prereg.yaml`** (no-peeking rule 5).
+Next: extract ETHEUR (part 01), run the ETH/EUR development backtest.
