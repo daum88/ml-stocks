@@ -57,3 +57,9 @@ def test_runner_end_to_end(prereg, fees, tmp_path):
     assert isinstance(result["selection"], str)
     assert result["window_days"] > 0
     assert result["bh"]["final_equity"] > 0
+    # C5 sanity floor must be scaled by YEARS (regression: runner was passing days)
+    for name in ["V1", "V2", "V3"]:
+        m = result["details"][name]["metrics"]
+        crit = result["outcomes"][name][1]
+        floor = prereg.criteria.C5_sanity_floor_trips[name] * (result["window_days"] / 365.25 / 8.0)
+        assert crit["C5"] == (m.round_trips >= floor)

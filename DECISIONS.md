@@ -222,3 +222,15 @@ The pipeline is validated end-to-end on real exchange data (12.3 yr window, 1m12
 - **Remaining (requires human):** lock `prereg.yaml` (`scripts/lock.py`), then
   `scripts/run_backtest.py --pair XBTEUR --gate`. ETHEUR download (optional dev asset)
   is still running in the background; LTCEUR already served the dev purpose.
+
+## 11. ETHEUR dev run + C5 bug fix (continued 2026-10-19)
+
+- Part 01 (ETHEUR/ETH-EUR) finished downloading and **SHA-256 verified** against the
+  published checksum. ETHEUR extracted, Parquet built (2015-08-07 → 2026-09-30).
+- **Bug found & fixed:** the runner passed `window_days` where `window_years` was expected,
+  making the C5 sanity floor 365× too strict (all variants failed C5). Fixed
+  (`window_days / 365.25`); regression assertion added to the runner test.
+- **ETHEUR dev results (after fix):** B&H CAGR 75.5%, Calmar 0.81. V1 CAGR 83.5%, Calmar 1.15
+  (beats B&H on both) but fails **C4** (Calmar rank < 95% in the circular-shift baseline) →
+  Tier C. V2/V3 Tier C. Same "edge is not distinguishable from random timing" outcome as LTCEUR.
+- Both dev assets (LTC/EUR, ETH/EUR) now ingested and run; pipeline validated end-to-end.

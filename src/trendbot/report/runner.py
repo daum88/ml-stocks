@@ -124,7 +124,8 @@ def evaluate(pair: str, parquet_dir: pathlib.Path, prereg: PreRegConfig, fees: F
         base_v = verdict.Baselines(bh_cagr=bh["cagr"], bh_calmar=bh["calmar"],
                                    exposure_matched_cagr=em_cagr)
         vo = verdict.evaluate_variant(name, m.cagr, m.calmar, m.round_trips, calmar_rank,
-                                      cagr_rank, sens_calmars, base_v, prereg, window_days)
+                                      cagr_rank, sens_calmars, base_v, prereg,
+                                      window_days / 365.25)
         outcomes[name] = vo
         details[name] = {"metrics": m, "backtest": res, "calmar_rank": calmar_rank,
                          "cagr_rank": cagr_rank, "sensitivity_calmars": sens_calmars}
